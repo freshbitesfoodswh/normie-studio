@@ -126,7 +126,8 @@ function geometry(P,W,H,weight){
   const e0=[eyeC[0]*asp,eyeC[1]], e1=[eyeC[2]*asp,eyeC[3]];
   const roll=Math.atan2(e1[1]-e0[1],e1[0]-e0[0])*(e1[0]>=e0[0]?1:1);
   const ch=p(152); const faceWh=dist(px(234),px(454)), faceH=dist(px(10),px(152));
-  return { weight, roll:(e1[0]<e0[0]?roll-Math.PI*Math.sign(roll):roll), chin:ch, faceWh, faceH,
+  const ja=p(172), jb=p(397); const neckCX=((ja[0]+jb[0])/2+ch[0])/2, jawY=(ja[1]+jb[1])/2;
+  return { weight, neckCX, jawY, roll:(e1[0]<e0[0]?roll-Math.PI*Math.sign(roll):roll), chin:ch, faceWh, faceH,
     faceW:fx1-fx0,
     maskA:[{tris:new Float32Array(lips),ch:[1,0,0,0]},{tris:new Float32Array(eyes),ch:[0,1,0,0]},{tris:new Float32Array(under),ch:[0,0,1,0]},{tris:new Float32Array(brows),ch:[0,0,0,1]}],
     maskB:[{tris:new Float32Array(lash),ch:[1,0,0,0]},{tris:new Float32Array(oval),ch:[0,0,1,0]}],

@@ -46,7 +46,7 @@ uniform vec3 uLipColor; uniform float uLipTint,uGloss,uLipFull,uLiner;
 uniform float uWhites,uIris,uLash,uUnder,uEyeSize,uEyeLift,uBrow;
 uniform vec2 uEyeC[2]; uniform float uEyeR[2]; uniform vec2 uIrisC[2]; uniform float uIrisR[2];
 uniform vec2 uLipC; uniform vec2 uLipR; uniform vec2 uGlossC[2]; uniform vec2 uGlossR;
-uniform float uRoll,uRotZoom,uPersp,uNeck,uJaw,uFaceW,uFaceH; uniform vec2 uChin; uniform float uGaze,uEyeOpen; uniform vec2 uGazeD[2];
+uniform float uRoll,uRotZoom,uPersp,uNeck,uJaw,uFaceW,uFaceH; uniform vec2 uChin; uniform float uGaze,uEyeOpen,uNeckCX,uJawY; uniform vec2 uGazeD[2];
 const vec3 L=vec3(0.299,0.587,0.114);
 vec3 sat(vec3 c,float s){ return mix(vec3(dot(c,L)),c,s); }
 float skinColor(vec3 c){
@@ -72,13 +72,17 @@ void main(){
     }
   }
   if(uPass<0.5 && uHasFace>0.01){
-    // neck slimming: compress toward neck centre line below the jaw, feathered
+    // neck slimming: every row from just under the jawline down is compressed toward the neck centre by the same
+    // factor (up to 22% narrower), so straight things (straps, necklace chain, collar) stay straight. A wide band
+    // further out (shoulders/background) absorbs the change; outside it nothing moves.
     if(uNeck>0.001){
-      vec2 p=iuv*asp; vec2 ch=uChin*asp;
-      // kept tight to the neck itself so straps / necklaces further out don't bend
-      float wy=smoothstep(ch.y-uFaceH*0.04,ch.y+uFaceH*0.14,p.y)*(1.0-smoothstep(ch.y+uFaceH*0.40,ch.y+uFaceH*0.70,p.y));
-      float u=(p.x-ch.x)/(uFaceW*0.46); if(abs(u)<1.0){ float g=(1.0-u*u); g*=g;
-        p.x=ch.x+(p.x-ch.x)*(1.0+uNeck*0.16*g*wy*uHasFace); iuv=p/asp; }
+      vec2 p=iuv*asp; vec2 ch=uChin*asp; float cx=uNeckCX*asp.x;
+      float wy=smoothstep(ch.y-uFaceH*0.06,ch.y+uFaceH*0.08,p.y);
+      float sN=1.0-uNeck*0.22*wy*uHasFace;
+      float e=uFaceW*0.70, m=uFaceW*0.50, es=e*sN;
+      float dx=p.x-cx, ax=abs(dx), src=ax;
+      if(ax<es) src=ax/sN; else if(ax<e+m) src=e+(ax-es)*(m/(e+m-es));
+      p.x=cx+sign(dx)*src; iuv=p/asp;
     }
     // jawline & chin contour
     if(uJaw>0.001){
@@ -299,7 +303,7 @@ export class Renderer {
       gl.uniform1f(u.uEyeSize,S.eyeSize); gl.uniform1f(u.uEyeLift,S.eyeLift); gl.uniform1f(u.uBrow,S.brow);
       if(face){
         gl.uniform2fv(u.uEyeC,face.eyeC); gl.uniform1fv(u.uEyeR,face.eyeR); gl.uniform2fv(u.uIrisC,face.irisC); gl.uniform1fv(u.uIrisR,face.irisR);
-        gl.uniform2fv(u.uChin,face.chin); gl.uniform2fv(u.uGazeD,face.gazeD); gl.uniform1f(u.uGaze,S.gaze||0); gl.uniform1f(u.uEyeOpen,S.eyeOpen||0); gl.uniform1f(u.uFaceW,face.faceWh); gl.uniform1f(u.uFaceH,face.faceH);
+        gl.uniform2fv(u.uChin,face.chin); gl.uniform2fv(u.uGazeD,face.gazeD); gl.uniform1f(u.uGaze,S.gaze||0); gl.uniform1f(u.uEyeOpen,S.eyeOpen||0); gl.uniform1f(u.uNeckCX,face.neckCX); gl.uniform1f(u.uJawY,face.jawY); gl.uniform1f(u.uFaceW,face.faceWh); gl.uniform1f(u.uFaceH,face.faceH);
         gl.uniform2fv(u.uLipC,face.lipC); gl.uniform2fv(u.uLipR,face.lipR); gl.uniform2fv(u.uGlossC,face.glossC); gl.uniform2fv(u.uGlossR,face.glossR);
       }
     });
