@@ -9,15 +9,15 @@ const toast=(m,ms=2600)=>{ const t=$('#toast'); t.textContent=m; t.hidden=false;
 const store={ get(k,d){ try{ const v=localStorage.getItem('ns.'+k); return v==null?d:JSON.parse(v); }catch{ return d; } }, set(k,v){ try{ localStorage.setItem('ns.'+k,JSON.stringify(v)); }catch{} } };
 
 // ---------- settings ----------
-const ZERO={smooth:0,shine:0,underEye:0,bright:0,contrast:0,warmth:0,sat:0,glow:0,lipTint:0,gloss:0,lipFull:0,liner:0,whites:0,iris:0,lash:0,eyeSize:0,eyeLift:0,brow:0,gaze:0,neck:0,jaw:0,level:0,persp:0};
+const ZERO={smooth:0,shine:0,underEye:0,bright:0,contrast:0,warmth:0,sat:0,glow:0,lipTint:0,gloss:0,lipFull:0,liner:0,whites:0,iris:0,lash:0,eyeSize:0,eyeLift:0,eyeOpen:0,brow:0,gaze:0,neck:0,jaw:0,level:0,persp:0};
 const PRESETS=[
   {id:'off',name:'Off',sub:'No filters',bg:'#EEF2F2',v:{}},
   {id:'natural',name:'Natural',sub:'Just a little nicer',bg:'#FFEBDD',v:{smooth:.45,shine:.3,underEye:.3,bright:.1,contrast:.05,warmth:.1,sat:.05,glow:.1,whites:.2}},
   {id:'glow',name:'Glow',sub:'Soft & radiant',bg:'#FFE0D2',v:{smooth:.6,underEye:.45,bright:.2,warmth:.15,sat:.1,glow:.55,whites:.3,iris:.2,gloss:.3}},
   {id:'warm',name:'Warm',sub:'Golden hour',bg:'#FFD8BE',v:{smooth:.45,underEye:.3,bright:.12,contrast:.1,warmth:.55,sat:.15,glow:.2}},
   {id:'studio',name:'Studio',sub:'Crisp & clean',bg:'#DDF3F1',v:{smooth:.5,shine:.5,underEye:.4,bright:.15,contrast:.25,warmth:.05,sat:.1,glow:.15,whites:.3,iris:.25,brow:.2,lash:.15,gaze:.4}},
-  {id:'softglam',name:'Soft Glam',sub:'Rose lip, bright eyes',bg:'#FCD3D9',v:{smooth:.6,shine:.5,underEye:.55,bright:.15,contrast:.1,warmth:.2,sat:.1,glow:.35,lipTint:.45,lipColor:'#D2667A',gloss:.45,lipFull:.2,liner:.25,whites:.4,iris:.35,lash:.35,eyeSize:.15,eyeLift:.15,brow:.3,neck:.3,jaw:.2,level:.7,persp:.3,gaze:.5}},
-  {id:'glam',name:'Glam',sub:'Berry lip, full lash',bg:'#F2C6D6',v:{smooth:.7,shine:.6,underEye:.65,bright:.15,contrast:.2,warmth:.15,sat:.15,glow:.3,lipTint:.55,lipColor:'#8E2A4F',gloss:.55,lipFull:.3,liner:.5,whites:.55,iris:.55,lash:.65,eyeSize:.3,eyeLift:.3,brow:.55,neck:.45,jaw:.35,level:.8,persp:.4,gaze:.6}},
+  {id:'softglam',name:'Soft Glam',sub:'Rose lip, bright eyes',bg:'#FCD3D9',v:{smooth:.6,shine:.5,underEye:.55,bright:.15,contrast:.1,warmth:.2,sat:.1,glow:.35,lipTint:.45,lipColor:'#D2667A',gloss:.45,lipFull:.2,liner:.25,whites:.4,iris:.35,lash:.35,eyeSize:.15,eyeLift:.15,brow:.3,neck:.3,jaw:.2,level:.7,persp:.3,gaze:.75,eyeOpen:.45}},
+  {id:'glam',name:'Glam',sub:'Berry lip, full lash',bg:'#F2C6D6',v:{smooth:.7,shine:.6,underEye:.65,bright:.15,contrast:.2,warmth:.15,sat:.15,glow:.3,lipTint:.55,lipColor:'#8E2A4F',gloss:.55,lipFull:.3,liner:.5,whites:.55,iris:.55,lash:.65,eyeSize:.3,eyeLift:.3,brow:.55,neck:.45,jaw:.35,level:.8,persp:.4,gaze:.9,eyeOpen:.6}},
 ];
 const DEF={...ZERO,...PRESETS[1].v,lipColor:'#D2667A',bgMode:'none',bgBlur:.6,bgColor:'#0E6E6B',preset:'natural'};
 const S=Object.assign({},DEF,store.get('settings',{}));
@@ -25,7 +25,7 @@ const saveS=()=>store.set('settings',S);
 const SL={
   skin:[['smooth','Skin smoothing',0,1],['underEye','Under-eye brighten',0,1],['shine','Shine & glare control',0,1],['bright','Brightness',-.5,1],['contrast','Contrast',-.5,1],['warmth','Warmth',-1,1],['sat','Color boost',-1,1],['glow','Soft glow',0,1]],
   lips:[['lipTint','Lip color',0,1],['gloss','Gloss & shine',0,1],['lipFull','Lip fullness',0,1],['liner','Lip liner',0,1]],
-  eyes:[['whites','Brighten eye whites',0,1],['iris','Iris pop',0,1],['lash','Lash & liner',0,1],['underEye','Dark-circle smoothing',0,1],['eyeSize','Eye enlarge',0,1],['eyeLift','Eye lift',0,1],['brow','Brow definition',0,1],['gaze','Eye contact (look at lens)',0,1]],
+  eyes:[['whites','Brighten eye whites',0,1],['iris','Iris pop',0,1],['lash','Lash & liner',0,1],['underEye','Dark-circle smoothing',0,1],['eyeOpen','Open eyes wider',0,1],['eyeSize','Eye enlarge',0,1],['eyeLift','Eye lift',0,1],['brow','Brow definition',0,1],['gaze','Eye contact (look at lens)',0,1]],
   sculpt:[['neck','Neck slimming',0,1],['jaw','Jawline & chin contour',0,1],['level','Auto-level head tilt',0,1],['persp','Higher camera angle',0,1]],
   bg:[['bgBlur','Blur strength',0,1]],
 };
@@ -142,7 +142,7 @@ function currentSource(){
   if(mode==='upload') return upVid.readyState>=2?{el:upVid,w:upVid.videoWidth,h:upVid.videoHeight}:null;
   return camStream&&camVid.readyState>=2?{el:camVid,w:camVid.videoWidth,h:camVid.videoHeight}:null;
 }
-function needFace(){ return ['lipTint','gloss','lipFull','liner','whites','iris','lash','underEye','eyeSize','eyeLift','brow','gaze','smooth','shine','neck','jaw','level'].some(k=>S[k]>0.001); }
+function needFace(){ return ['lipTint','gloss','lipFull','liner','whites','iris','lash','underEye','eyeSize','eyeLift','eyeOpen','brow','gaze','smooth','shine','neck','jaw','level'].some(k=>S[k]>0.001); }
 function frame(){
   requestAnimationFrame(frame);
   const src=currentSource(); if(!src||!renderer||!src.w) return;

@@ -46,7 +46,7 @@ uniform vec3 uLipColor; uniform float uLipTint,uGloss,uLipFull,uLiner;
 uniform float uWhites,uIris,uLash,uUnder,uEyeSize,uEyeLift,uBrow;
 uniform vec2 uEyeC[2]; uniform float uEyeR[2]; uniform vec2 uIrisC[2]; uniform float uIrisR[2];
 uniform vec2 uLipC; uniform vec2 uLipR; uniform vec2 uGlossC[2]; uniform vec2 uGlossR;
-uniform float uRoll,uRotZoom,uPersp,uNeck,uJaw,uFaceW,uFaceH; uniform vec2 uChin; uniform float uGaze; uniform vec2 uGazeD[2];
+uniform float uRoll,uRotZoom,uPersp,uNeck,uJaw,uFaceW,uFaceH; uniform vec2 uChin; uniform float uGaze,uEyeOpen; uniform vec2 uGazeD[2];
 const vec3 L=vec3(0.299,0.587,0.114);
 vec3 sat(vec3 c,float s){ return mix(vec3(dot(c,L)),c,s); }
 float skinColor(vec3 c){
@@ -95,6 +95,10 @@ void main(){
       if(d<1.0){ float f=(1.0-d*d); f*=f*uHasFace;
         iuv=uEyeC[k]+(iuv-uEyeC[k])*(1.0-uEyeSize*0.16*f);
         iuv.y+=uEyeLift*uEyeR[k]*0.10*f; }
+      // open the eyes: vertical-only stretch in a flat ellipse (brows/cheeks stay put)
+      vec2 pe=p/vec2(uEyeR[k]*0.85,uEyeR[k]*0.42); float de=length(pe);
+      if(de<1.0){ float f=(1.0-de*de); f*=f*uHasFace;
+        iuv.y=uEyeC[k].y+(iuv.y-uEyeC[k].y)*(1.0-uEyeOpen*0.34*f); }
     }
     // eye contact: move iris toward the lens, only inside the visible eye (blinks stay natural)
     if(uGaze>0.001){
@@ -295,7 +299,7 @@ export class Renderer {
       gl.uniform1f(u.uEyeSize,S.eyeSize); gl.uniform1f(u.uEyeLift,S.eyeLift); gl.uniform1f(u.uBrow,S.brow);
       if(face){
         gl.uniform2fv(u.uEyeC,face.eyeC); gl.uniform1fv(u.uEyeR,face.eyeR); gl.uniform2fv(u.uIrisC,face.irisC); gl.uniform1fv(u.uIrisR,face.irisR);
-        gl.uniform2fv(u.uChin,face.chin); gl.uniform2fv(u.uGazeD,face.gazeD); gl.uniform1f(u.uGaze,S.gaze||0); gl.uniform1f(u.uFaceW,face.faceWh); gl.uniform1f(u.uFaceH,face.faceH);
+        gl.uniform2fv(u.uChin,face.chin); gl.uniform2fv(u.uGazeD,face.gazeD); gl.uniform1f(u.uGaze,S.gaze||0); gl.uniform1f(u.uEyeOpen,S.eyeOpen||0); gl.uniform1f(u.uFaceW,face.faceWh); gl.uniform1f(u.uFaceH,face.faceH);
         gl.uniform2fv(u.uLipC,face.lipC); gl.uniform2fv(u.uLipR,face.lipR); gl.uniform2fv(u.uGlossC,face.glossC); gl.uniform2fv(u.uGlossR,face.glossR);
       }
     });

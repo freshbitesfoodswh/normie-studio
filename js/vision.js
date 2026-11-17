@@ -109,7 +109,10 @@ function geometry(P,W,H,weight){
     const ic=px(IRC); let r=0; for(let k=1;k<=4;k++) r+=dist(ic,px(IRC+k)); r/=4;
     irisC.push(ic[0]/asp,ic[1]); irisR.push(r*1.05);
     // gaze target: centre of the eye opening, nudged up a touch (lens is above the screen)
-    let gx=mid[0]-ic[0], gy=(mid[1]-r*0.12)-ic[1]; const gm=Math.hypot(gx,gy), lim=r*0.7; if(gm>lim){ gx*=lim/gm; gy*=lim/gm; }
+    // target = centre of the visible opening (between mid upper & lower lid), so the iris stays inside the eye
+    const um=px(UP[4]), lm=px(LO[4]); const openC=[(mid[0]*0.5+(um[0]+lm[0])*0.25),(um[1]+lm[1])/2 - r*0.03];
+    let gx=openC[0]-ic[0], gy=openC[1]-ic[1]; const gm=Math.hypot(gx,gy), lim=r*1.2; if(gm>lim){ gx*=lim/gm; gy*=lim/gm; }
+    const openH=Math.abs(lm[1]-um[1]); if(openH<r*0.6){ gx*=openH/(r*0.6); gy*=openH/(r*0.6); } // fade out during blinks
     gazeD.push(gx/asp,gy);
   }
   const oval=[]; fan(OVAL,oval);
