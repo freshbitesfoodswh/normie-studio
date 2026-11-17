@@ -73,15 +73,16 @@ void main(){
   }
   if(uPass<0.5 && uHasFace>0.01){
     // neck slimming: every row from just under the jawline down is compressed toward the neck centre by the same
-    // factor (up to 22% narrower), so straight things (straps, necklace chain, collar) stay straight. A wide band
+    // factor (up to 30% narrower, eased in over the under-jaw so strap tops lean gently instead of kinking), so straight things (straps, necklace chain, collar) stay straight. A wide band
     // further out (shoulders/background) absorbs the change; outside it nothing moves.
     if(uNeck>0.001){
       vec2 p=iuv*asp; vec2 ch=uChin*asp; float cx=uNeckCX*asp.x;
-      float wy=smoothstep(ch.y-uFaceH*0.06,ch.y+uFaceH*0.08,p.y);
-      float sN=1.0-uNeck*0.22*wy*uHasFace;
-      float e=uFaceW*0.70, m=uFaceW*0.50, es=e*sN;
+      float wy=smoothstep(ch.y-uFaceH*0.05,ch.y+uFaceH*0.20,p.y);
+      float sN=1.0-uNeck*0.30*wy*uHasFace;
       float dx=p.x-cx, ax=abs(dx), src=ax;
-      if(ax<es) src=ax/sN; else if(ax<e+m) src=e+(ax-es)*(m/(e+m-es));
+      float R=min(uFaceW*1.2, (dx>0.0?asp.x-cx:cx)-0.004);
+      float e=min(uFaceW*0.70,R*0.6), m=R-e, es=e*sN;
+      if(ax<es) src=ax/sN; else if(ax<R) src=e+(ax-es)*(m/(R-es));
       p.x=cx+sign(dx)*src; iuv=p/asp;
     }
     // jawline & chin contour
